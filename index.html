@@ -16,6 +16,7 @@
 <meta property="og:description" content="سباق في شوارع إسكندرية: دريفت ونيترو ونطّات و٣٢ عربية">
 <meta property="og:image" content="icon-512.png">
 <style>html,body{margin:0;height:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+<script data-goatcounter="https://alexnitro.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
 <title>Alex Nitro</title>
@@ -1365,7 +1366,7 @@ const casHas=(rc,n)=>!rc.list||rc.list.has(n);
 function casFillSurahs(){const rc=casRec(),ss=$('#casSur');ss.innerHTML=SURAHS.map((n,i)=>casHas(rc,i+1)?`<option value="${i+1}">${ar(i+1)}. ${n}</option>`:'').join('');if(!casHas(rc,S.cas.s)){let k=S.cas.s;for(let j=0;j<114&&!casHas(rc,k);j++)k=k%114+1;S.cas.s=k;save()}ss.value=S.cas.s;CAS.label=casLabel();$('#casNow').textContent=CAS.label}
 function casSrc(){return CAS.fileUrl||casRec().server+String(S.cas.s).padStart(3,'0')+'.mp3'}
 async function casPlay(){auInit();await casResolve();const a=CAS.audio,src=casSrc();if(a.src!==src){a.src=src}CAS.label=casLabel();$('#casNow').textContent=CAS.label;casSay('بيحمّل…');
- try{await a.play();CAS.playing=true;casSay('');S.casOn=true;save()}catch(e){CAS.playing=false;casSay('مش قادر أشغّل الكاسيت. اتأكد إن النت شغال وجرب تاني.',true)}casUI()}
+ try{await a.play();CAS.playing=true;casSay('');S.casOn=true;save();track('cassette-'+(CAS.fileUrl?'file':S.cas.r),'شغّل الكاسيت')}catch(e){CAS.playing=false;casSay('مش قادر أشغّل الكاسيت. اتأكد إن النت شغال وجرب تاني.',true)}casUI()}
 function casPause(){CAS.audio.pause();CAS.playing=false;S.casOn=false;save();casUI()}
 function casToggle(){CAS.playing?casPause():casPlay()}
 function casStep(d){if(CAS.fileUrl){CAS.audio.currentTime=0;return}const rc=casRec();let k=S.cas.s;for(let j=0;j<114;j++){k=((k-1+d+114)%114)+1;if(casHas(rc,k))break}S.cas.s=k;save();$('#casSur').value=S.cas.s;CAS.label=casLabel();$('#casNow').textContent=CAS.label;if(CAS.playing)casPlay()}
@@ -1396,7 +1397,9 @@ let toastT=0;
 function toast(msg,cls=''){const el=$('#toast');el.textContent=msg;el.className='show '+cls;toastT=1.1}
 function measureTouch(){const t=$('#touch');if(!t||t.hidden){G.touchLim=0;return}const r=t.getBoundingClientRect(),c=cv.getBoundingClientRect();G.touchLim=c.height?(r.top-c.top)*(H/c.height):0}
 window.addEventListener('resize',()=>setTimeout(measureTouch,50));
+function track(path,title){try{if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path,title,event:true})}catch(e){}}
 function startLevel(li){
+ track('level-'+(li+1)+'-start','بدأ المرحلة '+(li+1));
  auInit();buildLevel(li);
  Object.assign(G,{gear:'D',nitro:.5,drift:false,driftAng:0,driftScore:0,air:false,airT:0,spin:0,rev:false,boost:false,parts:[],pos:0,x:0,speed:0,steer:0,time:LV.time,money:0,crashes:0,coins:0,sky:0,shake:0,crashCd:0,attract:false,brake:false});
  $('#hTarget').textContent=money(targetMoney);$('#hFrom').textContent=LV.from;$('#hTo').textContent=LV.to;$('#hLvl').textContent='المرحلة '+ar(li+1);
@@ -1479,6 +1482,7 @@ function attract(dt){
 function endLevel(win,reason){
  engineSound(0,false);state='result';$('#hud').hidden=true;$('#touch').hidden=true;
  const li=levelIdx;let html='',btns='';
+ track('level-'+(li+1)+(win?'-win':'-lose'),(win?'كسب':'خسر')+' المرحلة '+(li+1));
  if(win){const tb=Math.floor(G.time)*LV.coin*2,rw=LV.reward,tot=G.money+tb+rw;S.money+=tot;S.unlocked=Math.max(S.unlocked,Math.min(LEVELS.length,li+2));S.best[li]=Math.max(S.best[li]||0,tot);save();
   tone([523,659,784,1047],.12,'triangle',.07);
   $('#rTitle').textContent=`وصلت ${LV.to}!`;$('#rTitle').className='';
@@ -1559,7 +1563,7 @@ document.querySelectorAll('.back').forEach(b=>b.addEventListener('click',()=>{if
 $('#lvList').addEventListener('click',e=>{const b=e.target.closest('button[data-l]');if(b)startLevel(+b.dataset.l)});
 $('#gGrid').addEventListener('click',e=>{const b=e.target.closest('.card');if(!b)return;gFocus=b.dataset.c;document.querySelectorAll('#gGrid .card').forEach(x=>x.classList.toggle('sel',x===b));renderShowcase()});
 $('#gInfo').addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b)return;const c=carById(gFocus);
- if(b.dataset.act==='buy'&&S.money>=c.price&&!S.owned.includes(c.id)){S.money-=c.price;S.owned.push(c.id);S.car=c.id;tone([523,784,1047],.1,'triangle',.07)}
+ if(b.dataset.act==='buy'&&S.money>=c.price&&!S.owned.includes(c.id)){S.money-=c.price;S.owned.push(c.id);track('buy-'+c.id,'اشترى '+c.name);S.car=c.id;tone([523,784,1047],.1,'triangle',.07)}
  else if(b.dataset.act==='use')S.car=c.id;
  else if(b.dataset.act==='rev'){auInit();if(!S.sound){S.sound=true;save()}AU.demo={id:c.id,t:0};return}
  save();makePlayerSprites();refreshGarage();document.querySelectorAll('.wv').forEach(e=>e.textContent=money(S.money))});
@@ -1600,7 +1604,7 @@ const hasManifest=!!document.querySelector('link[rel="manifest"]');
 if(hasManifest&&'serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('#bInstall').hidden=false});
 $('#bInstall').addEventListener('click',async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;$('#bInstall').hidden=true});
-window.addEventListener('appinstalled',()=>{$('#bInstall').hidden=true});
+window.addEventListener('appinstalled',()=>{$('#bInstall').hidden=true;track('app-installed','نزّل اللعبة على الموبايل')});
 if(hasManifest&&!isStandalone&&/iphone|ipad|ipod/i.test(navigator.userAgent))$('#iosHint').hidden=false;
 })();
 </script>

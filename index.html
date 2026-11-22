@@ -1328,6 +1328,9 @@ const RECITERS=[
  {id:'basitM',name:'عبد الباسط عبد الصمد · مجود',short:'عبد الباسط',key:['عبدالباسط','مجود'],server:'https://server7.mp3quran.net/basit/Almusshaf-Al-Mojawwad/'},
  {id:'husr',name:'محمود خليل الحصري · مرتل',short:'الحصري',key:['الحصري','مرتل'],server:'https://server13.mp3quran.net/husr/'},
  {id:'afs',name:'مشاري راشد العفاسي',short:'العفاسي',key:['العفاسي',''],server:'https://server8.mp3quran.net/afs/'},
+ {id:'dosari',name:'ياسر الدوسري',short:'الدوسري',key:['ياسرالدوسري',''],server:'https://server11.mp3quran.net/yasser/'},
+ {id:'maher',name:'ماهر المعيقلي',short:'المعيقلي',key:['ماهرالمعيقلي',''],server:'https://server12.mp3quran.net/maher/'},
+ {id:'rifaat',name:'محمد رفعت (السور المتسجلة بس)',short:'محمد رفعت',key:['محمدرفعت',''],server:'https://server14.mp3quran.net/refat/',list:new Set([1,10,11,12,17,18,19,20,25,48,54,55,56,69,70,71,72,73,75,76,77,78,79,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114])},
 ];
 if(!S.cas)S.cas={r:'minsh',s:1,vol:.85};
 const CAS={audio:new Audio(),playing:false,label:'',resolved:false,triedApi:false,fileUrl:null,fileName:'',retry:false};
@@ -1336,25 +1339,27 @@ const casRec=()=>RECITERS.find(r=>r.id===S.cas.r)||RECITERS[0];
 const casSay=(t,bad)=>{const m=$('#casMsg');m.textContent=t||'';m.className='cas-msg'+(bad?' bad':'')};
 function casLabel(){return CAS.fileUrl?CAS.fileName:`${casRec().short} · سورة ${SURAHS[S.cas.s-1]}`}
 async function casResolve(){if(CAS.triedApi)return;CAS.triedApi=true;try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);const r=await fetch('https://mp3quran.net/api/v3/reciters?language=ar',{signal:ctl.signal});const d=await r.json();const norm=s=>(s||'').replace(/\s+/g,'');
- for(const rc of RECITERS){const who=(d.reciters||[]).find(x=>norm(x.name).includes(norm(rc.key[0])));if(!who)continue;const ms=(who.moshaf||[]).filter(m=>norm(m.name).includes(norm(rc.key[1]))&&!/ورش|قالون/.test(m.name));const best=ms.find(m=>+m.surah_total===114)||ms[0];if(best&&best.server)rc.server=best.server.endsWith('/')?best.server:best.server+'/'}CAS.resolved=true}catch(e){}}
+ for(const rc of RECITERS){const who=(d.reciters||[]).find(x=>norm(x.name).includes(norm(rc.key[0])));if(!who)continue;const ms=(who.moshaf||[]).filter(m=>norm(m.name).includes(norm(rc.key[1]))&&!/ورش|قالون/.test(m.name));const best=ms.find(m=>+m.surah_total===114)||ms.slice().sort((a,b)=>(+b.surah_total||0)-(+a.surah_total||0))[0];if(best&&best.server){rc.server=best.server.endsWith('/')?best.server:best.server+'/';if(+best.surah_total<114&&best.surah_list)rc.list=new Set(String(best.surah_list).split(',').map(Number));else if(+best.surah_total===114)rc.list=null}}CAS.resolved=true}catch(e){}casFillSurahs()}
+const casHas=(rc,n)=>!rc.list||rc.list.has(n);
+function casFillSurahs(){const rc=casRec(),ss=$('#casSur');ss.innerHTML=SURAHS.map((n,i)=>casHas(rc,i+1)?`<option value="${i+1}">${ar(i+1)}. ${n}</option>`:'').join('');if(!casHas(rc,S.cas.s)){let k=S.cas.s;for(let j=0;j<114&&!casHas(rc,k);j++)k=k%114+1;S.cas.s=k;save()}ss.value=S.cas.s;CAS.label=casLabel();$('#casNow').textContent=CAS.label}
 function casSrc(){return CAS.fileUrl||casRec().server+String(S.cas.s).padStart(3,'0')+'.mp3'}
 async function casPlay(){auInit();await casResolve();const a=CAS.audio,src=casSrc();if(a.src!==src){a.src=src}CAS.label=casLabel();$('#casNow').textContent=CAS.label;casSay('بيحمّل…');
  try{await a.play();CAS.playing=true;casSay('');S.casOn=true;save()}catch(e){CAS.playing=false;casSay('مش قادر أشغّل الكاسيت. اتأكد إن النت شغال وجرب تاني.',true)}casUI()}
 function casPause(){CAS.audio.pause();CAS.playing=false;S.casOn=false;save();casUI()}
 function casToggle(){CAS.playing?casPause():casPlay()}
-function casStep(d){if(CAS.fileUrl){CAS.audio.currentTime=0;return}S.cas.s=((S.cas.s-1+d+114)%114)+1;save();$('#casSur').value=S.cas.s;CAS.label=casLabel();$('#casNow').textContent=CAS.label;if(CAS.playing)casPlay()}
+function casStep(d){if(CAS.fileUrl){CAS.audio.currentTime=0;return}const rc=casRec();let k=S.cas.s;for(let j=0;j<114;j++){k=((k-1+d+114)%114)+1;if(casHas(rc,k))break}S.cas.s=k;save();$('#casSur').value=S.cas.s;CAS.label=casLabel();$('#casNow').textContent=CAS.label;if(CAS.playing)casPlay()}
 function casUI(){$('#casPlay').textContent=CAS.playing?'⏸ إيقاف':'▶ شغّل';$('#bCas').textContent=CAS.playing?'📼 شغّال':'📼 كاسيت'}
 CAS.audio.addEventListener('ended',()=>{if(CAS.fileUrl){CAS.audio.currentTime=0;CAS.audio.play().catch(()=>{});return}casStep(1)});
 CAS.audio.addEventListener('playing',()=>{CAS.playing=true;casSay('');casUI()});
 CAS.audio.addEventListener('error',()=>{if(!CAS.audio.src)return;CAS.playing=false;casUI();casSay('مش قادر أوصل للتلاوة دلوقتي. اتأكد من النت، أو شغّل ملف من موبايلك.',true)});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&CAS.playing){CAS.audio.pause();CAS.resume=true}else if(!document.hidden&&CAS.resume){CAS.resume=false;CAS.audio.play().catch(()=>{})}});
 {const rs=$('#casRec'),ss=$('#casSur');rs.innerHTML=RECITERS.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');ss.innerHTML=SURAHS.map((n,i)=>`<option value="${i+1}">${ar(i+1)}. ${n}</option>`).join('');rs.value=S.cas.r;ss.value=S.cas.s;$('#casVol').value=S.cas.vol;
- rs.addEventListener('change',()=>{S.cas.r=rs.value;CAS.fileUrl=null;save();CAS.label=casLabel();$('#casNow').textContent=CAS.label;if(CAS.playing)casPlay()});
+ rs.addEventListener('change',()=>{S.cas.r=rs.value;CAS.fileUrl=null;save();casFillSurahs();CAS.label=casLabel();$('#casNow').textContent=CAS.label;if(CAS.playing)casPlay()});
  ss.addEventListener('change',()=>{S.cas.s=+ss.value;CAS.fileUrl=null;save();CAS.label=casLabel();$('#casNow').textContent=CAS.label;if(CAS.playing)casPlay()});
  $('#casVol').addEventListener('input',e=>{S.cas.vol=+e.target.value;CAS.audio.volume=S.cas.vol;save()});
  $('#casPlay').addEventListener('click',casToggle);$('#casPrev').addEventListener('click',()=>casStep(-1));$('#casNext').addEventListener('click',()=>casStep(1));
  $('#casFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(CAS.fileUrl)URL.revokeObjectURL(CAS.fileUrl);CAS.fileUrl=URL.createObjectURL(f);CAS.fileName=f.name.replace(/\.[^.]+$/,'');casPlay()});
- const open=()=>{$('#cassette').hidden=false;CAS.label=casLabel();$('#casNow').textContent=CAS.label;casUI()};
+ const open=()=>{$('#cassette').hidden=false;casResolve();casFillSurahs();CAS.label=casLabel();$('#casNow').textContent=CAS.label;casUI()};
  $('#bCas').addEventListener('click',open);$('#bCasM').addEventListener('click',open);$('#bCasP').addEventListener('click',open);$('#casClose').addEventListener('click',()=>{$('#cassette').hidden=true});
  $('#casNow').textContent=casLabel()}
 function drawTape(){const c=$('#casTape'),g=c.getContext('2d'),w=c.width,h=c.height,t=G.t;g.clearRect(0,0,w,h);

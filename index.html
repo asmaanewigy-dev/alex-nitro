@@ -160,6 +160,17 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 /* Touch */
 #touch{position:absolute;bottom:max(12px,env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'mid mid mid' 'steer . pedals';align-items:end;gap:10px;pointer-events:none}
 #touch .grp:first-child{grid-area:steer}
+#touch,#touch *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#touch .steer{width:min(44vw,250px);height:112px;border-radius:56px;background:rgba(6,19,30,.55);border:2px solid rgba(255,255,255,.25);display:flex;overflow:hidden;touch-action:none}
+#touch .steer span{flex:1;display:grid;place-items:center;font-size:2rem;color:rgba(255,255,255,.85);transition:background .08s}
+#touch .steer span+span{border-inline-start:1px solid rgba(255,255,255,.18)}
+#touch .steer.L .sp-l,#touch .steer.R .sp-r{background:rgba(255,198,41,.4)}
+#touch .pedals{align-items:flex-end}
+#touch button.pedal{width:80px;height:112px;border-radius:22px}
+#touch button.pedal.gas{width:92px;height:132px}
+#touch button.on{filter:brightness(1.6);transform:scale(.96)}
+#touch button.ag{background:rgba(6,19,30,.6)}
+#touch button.ag.act{background:rgba(74,216,137,.55)}
 #touch .grp:last-child{grid-area:pedals}
 #touch .grp{display:flex;gap:10px;pointer-events:auto}
 #touch button{width:74px;height:74px;border-radius:50%;padding:0;font-size:1.6rem;background:rgba(6,19,30,.6);border:2px solid rgba(255,255,255,.25);touch-action:none}
@@ -202,12 +213,15 @@ body.touch .hud-speed{bottom:100px}
  .hud-btns{top:82px;flex-wrap:wrap;right:max(12px,env(safe-area-inset-right,0px))}
  .hud-btns button{padding:.3em .6em;font-size:.8rem}
  #touch button{width:64px;height:64px;font-size:1.4rem}
- #touch .grp.mid button{width:52px;height:52px;font-size:1rem}
+ #touch .steer{width:min(46vw,200px);height:98px}
+ #touch button.pedal{width:68px;height:98px}
+ #touch button.pedal.gas{width:78px;height:116px}
+ #touch .grp.mid button{width:48px;height:48px;font-size:.95rem}
  #touch button span{font-size:.7rem}
- body.touch .hud-speed{bottom:160px}
- body.touch .nitro{bottom:226px}
+ body.touch .hud-speed{bottom:auto;top:128px;left:auto;right:max(12px,env(safe-area-inset-right,0px))}
+ body.touch .nitro{bottom:auto;top:132px}
 }
-@media (max-height:460px){#touch{grid-template-areas:'steer mid pedals'}#touch .grp.mid{align-self:end}body.touch .hud-speed{bottom:96px}body.touch .nitro{bottom:auto;top:96px;left:auto;right:max(14px,env(safe-area-inset-right,0px))}}
+@media (max-height:460px){#touch{grid-template-areas:'steer mid pedals'}#touch .grp.mid{align-self:end}body.touch .hud-speed{bottom:auto;top:150px}body.touch .nitro{bottom:auto;top:96px;left:auto;right:max(14px,env(safe-area-inset-right,0px))}}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 </style>
 
@@ -237,9 +251,9 @@ body.touch .hud-speed{bottom:100px}
   </div>
 
   <div id="touch" hidden dir="ltr">
-    <div class="grp"><button type="button" data-k="left" aria-label="شمال">◀</button><button type="button" data-k="right" aria-label="يمين">▶</button></div>
-    <div class="grp mid"><button type="button" class="nit" data-k="nitro">N<span>نيترو</span></button><button type="button" class="drf" data-k="hand">↯<span>دريفت</span></button><button type="button" class="gr" id="tGear">D<span>فتيس</span></button></div>
-    <div class="grp"><button type="button" class="brk" data-k="down">■<span>فرامل</span></button><button type="button" class="gas" data-k="up">▲<span>بنزين</span></button></div>
+    <div class="grp steer" id="steerPad" role="group" aria-label="الدركسيون: حرّك صباعك يمين وشمال"><span class="sp-l">◀</span><span class="sp-r">▶</span></div>
+    <div class="grp mid"><button type="button" class="nit" data-k="nitro">N<span>نيترو</span></button><button type="button" class="drf" data-k="hand">↯<span>دريفت</span></button><button type="button" class="gr" id="tGear">D<span>فتيس</span></button><button type="button" class="ag" id="tAuto">A<span>أوتو</span></button></div>
+    <div class="grp pedals"><button type="button" class="brk pedal" data-k="down">■<span>فرامل</span></button><button type="button" class="gas pedal" data-k="up">▲<span>بنزين</span></button></div>
   </div>
 
   <div id="cassette" hidden>
@@ -1389,6 +1403,7 @@ function crash(kind){
  toast(kind==='car'?`خبطة! −${money(pen)} ج`:`حاسب! −${money(pen)} ج`,'bad');
 }
 function update(dt){
+ const gasOn=keys.up||(S.autoGas&&isTouch&&G.gear==='D'&&!keys.down&&!keys.hand);
  const car=carById(S.car),max=car.max;
  const oldPos=G.pos;
  const pSeg0=findSeg(G.pos+PLAYERZ);const pct=Math.abs(G.speed)/max;const dx=dt*2*pct;const sdx=dt*2*Math.min(1,Math.max(pct,Math.min(.4,pct*6)));
@@ -1417,7 +1432,7 @@ function update(dt){
  if(!G.air){
   const toZero=r=>{G.speed=G.speed>0?Math.max(0,G.speed-r*dt):Math.min(0,G.speed+r*dt)};
   if(keys.down)toZero(max/1.6);
-  else if(keys.up){if(G.gear==='D'){if(G.speed<0)toZero(max*1.2);else G.speed+=max/6*car.acc*dt*(useN?2:1)}else{if(G.speed>0)toZero(max*1.2);else G.speed=Math.max(-max*.22,G.speed-max*.3*dt)}}
+  else if(gasOn){if(G.gear==='D'){if(G.speed<0)toZero(max*1.2);else G.speed+=max/6*car.acc*dt*(useN?2:1)}else{if(G.speed>0)toZero(max*1.2);else G.speed=Math.max(-max*.22,G.speed-max*.3*dt)}}
   else toZero(G.speed>0?max/7:max/3);
   if(keys.hand&&!G.drift&&G.speed>0)G.speed=Math.max(0,G.speed-max*.55*dt);
  }
@@ -1437,7 +1452,7 @@ function update(dt){
  G.sky+=dt*pct*pSeg.curve*.02*(G.speed<0?-1:1);
  G.time-=dt;G.crashCd-=dt;G.shake=Math.max(0,G.shake-dt*2.5);
  updTraffic(dt);
- engineSound(Math.min(1,pct),true,keys.up||useN);
+ engineSound(Math.min(1,pct),true,gasOn||useN);
  if(G.time<=0){G.time=0;endLevel(false,'time');return}
  if(pSeg.index>=finishIdx){endLevel(G.money>=targetMoney,'money')}
 }
@@ -1511,7 +1526,16 @@ window.addEventListener('keydown',e=>{const k=KM[e.code];if(k&&(state==='play'||
  if((e.code==='KeyP'||e.code==='Escape')){if(state==='play')pause();else if(state==='pause')resume()}});
 window.addEventListener('keyup',e=>{const k=KM[e.code];if(k)keys[k]=false});
 window.addEventListener('blur',()=>{keys={left:false,right:false,up:false,down:false,hand:false,nitro:false};if(state==='play')pause()});
-document.querySelectorAll('#touch button').forEach(b=>{const k=b.dataset.k;const on=e=>{e.preventDefault();keys[k]=true;auInit()},off=e=>{e.preventDefault();keys[k]=false};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off)});
+const vib=()=>{try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}};
+document.querySelectorAll('#touch button[data-k]').forEach(b=>{const k=b.dataset.k;let id=null;
+ b.addEventListener('pointerdown',e=>{e.preventDefault();id=e.pointerId;try{b.setPointerCapture(id)}catch(x){}keys[k]=true;b.classList.add('on');vib();auInit()});
+ const off=e=>{if(id!==null&&e.pointerId!==id)return;id=null;keys[k]=false;b.classList.remove('on')};b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('lostpointercapture',off)});
+{const pad=$('#steerPad');let id=null;const set=e=>{const r=pad.getBoundingClientRect();const L=(e.clientX-r.left)<r.width/2;if(L!==keys.left)vib();keys.left=L;keys.right=!L;pad.classList.toggle('L',L);pad.classList.toggle('R',!L)};
+ pad.addEventListener('pointerdown',e=>{e.preventDefault();id=e.pointerId;try{pad.setPointerCapture(id)}catch(x){}set(e);auInit()});
+ pad.addEventListener('pointermove',e=>{if(e.pointerId===id)set(e)});
+ const off=e=>{if(e.pointerId!==id)return;id=null;keys.left=keys.right=false;pad.classList.remove('L','R')};pad.addEventListener('pointerup',off);pad.addEventListener('pointercancel',off);pad.addEventListener('lostpointercapture',off)}
+$('#touch').addEventListener('contextmenu',e=>e.preventDefault());
+{const ab=$('#tAuto');const ui=()=>ab.classList.toggle('act',!!S.autoGas);ui();ab.addEventListener('pointerdown',e=>{e.preventDefault();S.autoGas=!S.autoGas;save();ui();vib();toast(S.autoGas?'بنزين أوتوماتيك: شغال':'بنزين أوتوماتيك: مقفول')})}
 function toggleView(){G.view=G.view==='chase'?'cockpit':'chase';$('#bView').textContent=G.view==='chase'?'منظر من جوه':'منظر من بره';$('#hSpeedBox').hidden=G.view==='cockpit'}
 function setGear(gr){if(G.gear===gr)return;const max=carById(S.car).max;if(Math.abs(G.speed)>max*.05){toast('اقف الأول عشان تغيّر الفتيس','bad');return}G.gear=gr;tone([gr==='R'?392:587],.06,'square',.04);updGearUI()}
 function updGearUI(){document.querySelectorAll('[data-gear]').forEach(b=>b.classList.toggle('on',b.dataset.gear===G.gear));$('#tGear').firstChild.nodeValue=G.gear}

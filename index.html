@@ -372,6 +372,7 @@ const CARS=[
  {id:'mustang',    brand:'Ford',         model:'Mustang GT',     price:6000000,  body:'coupe',color:'#ffb000',stripes:'#151515',spoiler:true},
  {id:'tesla',      brand:'Tesla',        model:'Model S',        price:7000000,  body:'sedan',color:'#e9eaec',electric:true},
  {id:'landcruiser',brand:'Toyota',       model:'Land Cruiser',   price:7500000,  body:'suv',  color:'#efeee9',offroad:true},
+ {id:'charger',    brand:'Dodge',        model:'Charger SRT Hellcat',price:8000000,body:'sedan',color:'#ff6a13',stripes:'#111111',spoiler:true},
  {id:'dodge',      brand:'Dodge',        model:'Challenger SRT Hellcat',price:8500000,body:'coupe',color:'#5b2a86',stripes:'#111111',spoiler:true},
  {id:'gtr',        brand:'Nissan',       model:'GT-R',           price:9000000,  body:'coupe',color:'#9aa1a8',wing:true},
  {id:'range',      brand:'Range Rover',  model:'Sport',          price:10000000, body:'suv',  color:'#3d4b40',offroad:true},
@@ -401,7 +402,7 @@ function latin(g,s,size,color,y=0,weight=900,style=''){g.font=`${style} ${weight
 function ngon(g,n,r,rot=0){g.beginPath();for(let i=0;i<n;i++){const a=rot+i*Math.PI*2/n;i?g.lineTo(Math.cos(a)*r,Math.sin(a)*r):g.moveTo(Math.cos(a)*r,Math.sin(a)*r)}g.closePath()}
 function emblem(g,id,x,y,r){
  if(r<1.2)return;
- id=({landcruiser:'toyota',gtr:'nissan',g63:'merc'})[id]||id;
+ id=({landcruiser:'toyota',gtr:'nissan',g63:'merc',charger:'dodge'})[id]||id;
  g.save();g.translate(x,y);
  switch(id){
   case'fiat':circ(g,r,chromeG(g,r));circ(g,r*.84,'#a8102a');g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=r*.05;g.beginPath();g.arc(0,0,r*.72,0,7);g.stroke();latin(g,'FIAT',r*.34,'#fff');break;
@@ -1132,6 +1133,7 @@ const INT={
  aston:{dash:'#2a201a',dash2:'#120d0a',trim:'#3c5a46',tt:'leather',wheel:'#1f1915',acc:'#d8c08a',g:'digital',roof:'#2a221c',stitch:'#d8c08a'},
  rolls:{dash:'#2a1e17',dash2:'#120c08',trim:'#5e331a',tt:'wood',wheel:'#e9e1d2',acc:'#cfe3ff',g:'wide',roof:'#0b0b18',stitch:'#e9e1d2',stars:true},
  koenigsegg:{dash:'#141414',dash2:'#050505',trim:'#262626',tt:'carbon',wheel:'#111111',acc:'#ffcc00',g:'race',face:'#0b0b0b',roof:'#131313',stitch:'#ffcc00',mark:'#ffcc00'},
+ charger:{dash:'#1f1f22',dash2:'#0d0d0f',trim:'#9aa1a8',tt:'alu',wheel:'#161618',acc:'#ff6a13',g:'digital',roof:'#1c1c1e',stitch:'#ff6a13'},
  dodge:{dash:'#1d1d20',dash2:'#0c0c0e',trim:'#8e959c',tt:'alu',wheel:'#151517',acc:'#ff3b1f',g:'digital',roof:'#1b1b1d',stitch:'#ff3b1f'},
  kia:{dash:'#34363a',dash2:'#1c1d20',trim:'#7a7f86',tt:'plastic',wheel:'#262628',acc:'#ff4d4d',g:'analog',roof:'#8a877f'},
  hyundai:{dash:'#2c2e33',dash2:'#17181b',trim:'#8f97a0',tt:'plastic',wheel:'#202124',acc:'#3fb6ff',g:'analog',roof:'#807d77'},
@@ -1273,6 +1275,7 @@ const SND={
  aston:{cyl:12,idle:800,red:7000,gears:8,shape:18,cut:3400,bright:.45,sub:.45,turbo:.3,pops:.4,vol:1.15},
  rolls:{cyl:12,idle:600,red:5600,gears:8,shape:4,cut:1100,bright:.12,sub:.4,vol:.7},
  koenigsegg:{cyl:8,idle:1000,red:8500,gears:9,shape:24,cut:4600,bright:.6,sub:.4,turbo:.9,pops:.6,vol:1.2},
+ charger:{cyl:8,idle:720,red:6200,gears:8,shape:20,cut:2200,bright:.32,sub:.85,lope:.75,sc:.7,pops:.45,vol:1.22},
  dodge:{cyl:8,idle:750,red:6200,gears:8,shape:22,cut:2300,bright:.35,sub:.85,lope:.8,sc:.75,pops:.5,vol:1.25},
  kia:{cyl:3,idle:850,red:6200,gears:5,shape:7,cut:1300,bright:.22,sub:.3,vol:.8},
  nissan:{cyl:4,idle:750,red:6000,cvt:true,shape:4,cut:1500,bright:.18,sub:.3,vol:.8},

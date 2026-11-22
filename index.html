@@ -822,7 +822,7 @@ const THEMES={
  dawn:  {sky:['#6f9fd6','#f7c7a3'],sea:['#3a7aa3','#36729a'],seaFar:'#d8b3a2',side:['#cbbfb1','#c2b5a6'],road:['#56585e','#515359'],fog:'#efcfb8',fogD:3.2,sun:[.85,.38,'#fff0d8',40],city:'#a99aa5',clouds:true,gulls:true},
 };
 {const GR={day:['#ffe9c0',.10],noon:['#fff6e0',.06],golden:['#ff9a40',.16],sunset:['#ff6a50',.16],dusk:['#6040a0',.16],night:['#2a48b0',.16],dawn:['#ffb0a0',.12],coast:['#a0f0ff',.08],desert:['#ffb060',.14]};for(const k in GR)THEMES[k].grade=GR[k]}
-const SEG=200,RUMBLE=3,ROADW=2000,LANES=3,FOV=100,CAMD=1/Math.tan((FOV/2)*Math.PI/180),DRAW=240,PLAYERZ=1000*CAMD,PW=.34,CENTRI=.2;
+const SEG=200,RUMBLE=3,ROADW=2000,LANES=3,FOV=100,CAMD=1/Math.tan((FOV/2)*Math.PI/180),DRAW=240,PLAYERZ=1400,CHASE_H=1250,COCKPIT_Z=1400-1000*CAMD,PW=.34,CENTRI=.2;
 const MARKDEF={tram:{off:2.9,w:3},biblio:{off:4.1,w:4},montaza:{off:4.4,w:3.8},qaitbay:{off:-4.6,w:4.6},soldier:{off:3.3,w:2.8},zaghloul:{off:2.1,w:.8},cecil:{off:2.65,w:2.2},windsor:{off:2.65,w:2.2},sidigaber:{off:3.3,w:3.2},sporting:{off:2.8,w:2.6},sanstefano:{off:3.1,w:2.4},helnan:{off:3,w:2.6},beach:{off:-2.7,w:2.6},mosque:{off:3.5,w:3.2},rastin:{off:2.65,w:2.2},bitash:{off:-2.7,w:2.6},marina:{off:2.8,w:2.6},alamein:{off:3.1,w:2.4},agiba:{off:-2.7,w:2.6},pompey:{off:2.5,w:1.1},roman:{off:3.5,w:3.4},greenplaza:{off:3.1,w:2.4},citycentre:{off:3.5,w:3.6},stadium:{off:3.8,w:4.2},rashid:{off:3.7,w:3.8},baltim:{off:-2.7,w:2.6}};
 const LEVEL_DEF=[
  {from:'المنشية',to:'محطة الرمل',theme:'day',marks:['soldier@.22','zaghloul@.5','cecil@.78'],spots:['mohamedahmed','delices','trianon']},
@@ -1032,15 +1032,18 @@ function render(){
  if(!segments.length)return;
  ctx.save();
  if(G.shake>0){ctx.translate((Math.random()-.5)*G.shake*W*.02,(Math.random()-.5)*G.shake*H*.02)}
- const base=findSeg(G.pos),bp=(G.pos%SEG)/SEG;
+ const inCab=G.view==='cockpit'&&!G.attract,camZ=G.pos+(inCab?COCKPIT_Z:0);
+ const carY=H/2+(CAMD/PLAYERZ)*CHASE_H*H/2,shiftY=(!inCab&&!G.attract&&G.touchLim&&H>W)?Math.max(0,carY-(G.touchLim-12)):0;
+ ctx.save();ctx.translate(0,-shiftY);
+ const base=findSeg(camZ),bp=(camZ%SEG)/SEG;
  const pSeg=findSeg(G.pos+PLAYERZ),pp=((G.pos+PLAYERZ)%SEG)/SEG,pY=lerp(pSeg.p1.world.y,pSeg.p2.world.y,pp);
- const liftK=G.air?Math.sin(Math.PI*clamp(G.airT/G.airDur,0,1)):0;const camH=(G.view==='cockpit'&&!G.attract?560:1000)+(G.view==='cockpit'?liftK*700:0);
+ const liftK=G.air?Math.sin(Math.PI*clamp(G.airT/G.airDur,0,1)):0;const camH=(inCab?560:CHASE_H)+(G.view==='cockpit'?liftK*700:0);
  drawBG();
- let maxy=H,x=0,dx=-(base.curve*bp),farX=W/2;
+ let maxy=H+shiftY,x=0,dx=-(base.curve*bp),farX=W/2;
  const fogK=TH.fogD;
  for(let n=0;n<DRAW;n++){
   const seg=segments[(base.index+n)%segments.length];seg.looped=seg.index<base.index;seg.clip=maxy;seg.fog=1-Math.exp(-Math.pow(n/DRAW,2)*fogK);seg.vis=false;
-  const cz=G.pos-(seg.looped?trackLen:0);
+  const cz=camZ-(seg.looped?trackLen:0);
   project(seg.p1,G.x*ROADW-x,pY+camH,cz);project(seg.p2,G.x*ROADW-x-dx,pY+camH,cz);
   x+=dx;dx+=seg.curve;
   if(seg.p1.camera.z<=CAMD||seg.p2.screen.y>=seg.p1.screen.y||seg.p2.screen.y>=maxy)continue;
@@ -1057,30 +1060,31 @@ function render(){
   for(const car of seg.cars){if(car.hidden)continue;const p=(car.z%SEG)/SEG;const s2=lerp(seg.p1.screen.scale,seg.p2.screen.scale,p);const cx=lerp(seg.p1.screen.x,seg.p2.screen.x,p)+s2*car.off*ROADW*W/2;const cy=lerp(seg.p1.screen.y,seg.p2.screen.y,p);drawSprite(car.img,car.w,s2,cx,cy,seg.clip,false,fog,undefined,false,true);if(TH.head){const dw=car.w*s2*ROADW*W/2,dh=dw*car.img.height/car.img.width,ly=cy-dh*.42;if(dw>2&&(!seg.clip||ly<=seg.clip)){ctx.save();ctx.globalCompositeOperation='lighter';for(const sd of[-.36,.36]){const gx=cx+dw*sd,r=dw*.32;const gr=ctx.createRadialGradient(gx,ly,0,gx,ly,r);gr.addColorStop(0,'rgba(255,50,30,.55)');gr.addColorStop(1,'rgba(255,50,30,0)');ctx.fillStyle=gr;ctx.fillRect(gx-r,ly-r,r*2,r*2)}ctx.restore()}}}
   if(seg===pSeg&&(G.view!=='cockpit'||G.attract))drawPlayer(pSeg,pp,pY);
  }
+ ctx.restore();
  screenFX();
  if(G.view==='cockpit'&&!G.attract){if(TH.head)headlights(true);if(G.spin){ctx.save();ctx.translate(W/2,H/2);ctx.rotate(G.spin);ctx.translate(-W/2,-H/2)}drawCockpit(ctx,W,H,carById(S.car),{gear:G.gear,steer:clamp(G.steer+G.driftAng,-1.2,1.2),kmh:kmh(Math.abs(G.speed)),pct:Math.abs(G.speed)/carById(S.car).max,t:G.t,prog:clamp((G.pos+PLAYERZ)/(finishIdx*SEG),0,1),money:G.money});if(G.spin)ctx.restore()}
  ctx.restore();
 }
-function headlights(cockpit){ctx.save();ctx.globalCompositeOperation='lighter';const y0=cockpit?H*.7:H*.92,y1=Math.max(G.horizon,H*.45);const g=ctx.createLinearGradient(0,y0,0,y1);g.addColorStop(0,'rgba(255,240,200,.28)');g.addColorStop(1,'rgba(255,240,200,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(W*.18,y0);ctx.lineTo(W*.82,y0);ctx.lineTo(W*.6,y1);ctx.lineTo(W*.4,y1);ctx.fill();ctx.restore()}
+function headlights(cockpit){ctx.save();ctx.globalCompositeOperation='lighter';const y0=cockpit?H*.7:Math.min(H*.92,H/2+(CAMD/PLAYERZ)*CHASE_H*H/2-H*.04),y1=Math.max(G.horizon,H*.45);const g=ctx.createLinearGradient(0,y0,0,y1);g.addColorStop(0,'rgba(255,240,200,.28)');g.addColorStop(1,'rgba(255,240,200,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(W*.18,y0);ctx.lineTo(W*.82,y0);ctx.lineTo(W*.6,y1);ctx.lineTo(W*.4,y1);ctx.fill();ctx.restore()}
 function drawPlayer(pSeg,pp,pY){
  if(TH.head)headlights(false);
  const car=carById(S.car),img=SP.player[G.rev?2:(G.brake?1:0)];const dw=PW*(CAMD/PLAYERZ)*ROADW*W/2*.92,dh=dw*img.height/img.width;
  const off=(G.x<-1||G.x>1)?3:1;const b=G.air?0:(G.attract?.5:1)*Math.random()*(Math.abs(G.speed)/car.max)*off*(H/480)*1.2;
  const lift=G.air?Math.sin(Math.PI*clamp(G.airT/G.airDur,0,1))*H*.22:0;
- const cx=W/2+G.driftAng*dw*.2,cy=H-6-b-lift;
- if(G.air){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(W/2,H-8,dw*.45*(1-lift/(H*.5)),dh*.08,0,0,7);ctx.fill()}
+ const baseY=Math.min(H-6,H/2+(CAMD/PLAYERZ)*CHASE_H*H/2),cx=W/2+G.driftAng*dw*.2,cy=baseY-b-lift;
+ if(G.air){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(W/2,baseY-2,dw*.45*(1-lift/(H*.5)),dh*.08,0,0,7);ctx.fill()}
  if(!PLC||PLC.width!==img.width||PLC.height!==img.height)PLC=mk(img.width,img.height,()=>{});
  {const q=PLC.getContext('2d'),pw=PLC.width,ph=PLC.height;q.globalCompositeOperation='source-over';q.clearRect(0,0,pw,ph);q.drawImage(img,0,0);q.globalCompositeOperation='source-atop';
   const tg=q.createLinearGradient(0,0,0,ph);tg.addColorStop(0,rgba(TH.sky[1],TH.head?.08:.28));tg.addColorStop(.55,rgba(TH.sky[0],.06));tg.addColorStop(1,'rgba(0,0,0,.12)');q.fillStyle=tg;q.fillRect(0,0,pw,ph);
   const o=((G.pos*.06)%(pw*2.4));q.fillStyle=TH.head?'rgba(255,210,150,.10)':'rgba(255,255,255,.13)';for(const k of[0,1.2]){const bx=pw*1.2-o+k*pw;q.beginPath();q.moveTo(bx,0);q.lineTo(bx+pw*.12,0);q.lineTo(bx-pw*.1,ph);q.lineTo(bx-pw*.22,ph);q.fill()}
   if(TH.head){q.fillStyle='rgba(8,14,34,.32)';q.fillRect(0,0,pw,ph)}}
- if(TH.head&&G.brake){ctx.save();ctx.globalCompositeOperation='lighter';const gr=ctx.createRadialGradient(cx,H-6,0,cx,H-6,dw*.8);gr.addColorStop(0,'rgba(255,40,20,.35)');gr.addColorStop(1,'rgba(255,40,20,0)');ctx.fillStyle=gr;ctx.fillRect(cx-dw*.8,H-6-dw*.4,dw*1.6,dw*.5);ctx.restore()}
+ if(TH.head&&G.brake){ctx.save();ctx.globalCompositeOperation='lighter';const gr=ctx.createRadialGradient(cx,baseY,0,cx,baseY,dw*.8);gr.addColorStop(0,'rgba(255,40,20,.35)');gr.addColorStop(1,'rgba(255,40,20,0)');ctx.fillStyle=gr;ctx.fillRect(cx-dw*.8,baseY-dw*.4,dw*1.6,dw*.5);ctx.restore()}
  ctx.save();ctx.translate(cx,cy-dh/2);ctx.rotate(G.steer*.035+G.driftAng*.2+G.spin);
  ctx.drawImage(PLC,-dw/2,-dh/2,dw,dh);
  if(G.boost){for(const sx of[-.19,.19]){const fl=dh*(.3+Math.random()*.25),gx=sx*dw,gy=dh*.38;const gr=ctx.createLinearGradient(gx,gy,gx,gy+fl);gr.addColorStop(0,'rgba(255,255,255,.95)');gr.addColorStop(.3,'rgba(90,170,255,.9)');gr.addColorStop(1,'rgba(160,80,255,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(gx-dw*.04,gy);ctx.lineTo(gx+dw*.04,gy);ctx.lineTo(gx,gy+fl);ctx.fill()}}
  ctx.restore();
  const dt=G.dtR||.016;
- if(!G.attract&&(G.drift||(keys.hand&&Math.abs(G.speed)>car.max*.2))&&!G.air&&G.parts.length<90){for(const sd of[-1,1])G.parts.push({x:cx+sd*dw*.33,y:H-12,vx:(Math.random()-.5)*W*.06-G.driftAng*W*.12,vy:-H*(.04+Math.random()*.08),r:dw*.05,life:1})}
+ if(!G.attract&&(G.drift||(keys.hand&&Math.abs(G.speed)>car.max*.2))&&!G.air&&G.parts.length<90){for(const sd of[-1,1])G.parts.push({x:cx+sd*dw*.33,y:baseY-6,vx:(Math.random()-.5)*W*.06-G.driftAng*W*.12,vy:-H*(.04+Math.random()*.08),r:dw*.05,life:1})}
  for(let i=G.parts.length-1;i>=0;i--){const q=G.parts[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.r+=dw*.3*dt;q.life-=dt*1.1;if(q.life<=0){G.parts.splice(i,1);continue}
   const gr=ctx.createRadialGradient(q.x,q.y,0,q.x,q.y,q.r);gr.addColorStop(0,`rgba(225,225,225,${(q.life*.42).toFixed(3)})`);gr.addColorStop(1,'rgba(225,225,225,0)');ctx.fillStyle=gr;ctx.fillRect(q.x-q.r,q.y-q.r,q.r*2,q.r*2)}
 }
@@ -1364,11 +1368,13 @@ function drawTape(){const c=$('#casTape'),g=c.getContext('2d'),w=c.width,h=c.hei
 /* ---------- gameplay ---------- */
 let toastT=0;
 function toast(msg,cls=''){const el=$('#toast');el.textContent=msg;el.className='show '+cls;toastT=1.1}
+function measureTouch(){const t=$('#touch');if(!t||t.hidden){G.touchLim=0;return}const r=t.getBoundingClientRect(),c=cv.getBoundingClientRect();G.touchLim=c.height?(r.top-c.top)*(H/c.height):0}
+window.addEventListener('resize',()=>setTimeout(measureTouch,50));
 function startLevel(li){
  auInit();buildLevel(li);
  Object.assign(G,{gear:'D',nitro:.5,drift:false,driftAng:0,driftScore:0,air:false,airT:0,spin:0,rev:false,boost:false,parts:[],pos:0,x:0,speed:0,steer:0,time:LV.time,money:0,crashes:0,coins:0,sky:0,shake:0,crashCd:0,attract:false,brake:false});
  $('#hTarget').textContent=money(targetMoney);$('#hFrom').textContent=LV.from;$('#hTo').textContent=LV.to;$('#hLvl').textContent='المرحلة '+ar(li+1);
- show(null);$('#hud').hidden=false;$('#touch').hidden=!isTouch;
+ show(null);$('#hud').hidden=false;$('#touch').hidden=!isTouch;requestAnimationFrame(measureTouch);
  if(isTouch){try{const de=document.documentElement;if(!document.fullscreenElement&&de.requestFullscreen)de.requestFullscreen({navigationUI:'hide'}).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}
   if(matchMedia('(orientation:portrait)').matches)setTimeout(()=>toast('لف الموبايل بالعرض 📱↻'),900)}
  updGearUI();state='count';G.count=3.2;$('#count').textContent='';$('#combo').textContent='';

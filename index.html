@@ -158,10 +158,12 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 #count{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);font-family:var(--f-display);font-size:clamp(4rem,16vw,9rem);color:var(--tram);text-shadow:0 6px 0 #8a5a00}
 
 /* Touch */
-#touch{position:absolute;bottom:12px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;pointer-events:none}
+#touch{position:absolute;bottom:max(12px,env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'mid mid mid' 'steer . pedals';align-items:end;gap:10px;pointer-events:none}
+#touch .grp:first-child{grid-area:steer}
+#touch .grp:last-child{grid-area:pedals}
 #touch .grp{display:flex;gap:10px;pointer-events:auto}
 #touch button{width:74px;height:74px;border-radius:50%;padding:0;font-size:1.6rem;background:rgba(6,19,30,.6);border:2px solid rgba(255,255,255,.25);touch-action:none}
-#touch .grp.mid{align-self:flex-end;margin-bottom:6px}
+#touch .grp.mid{grid-area:mid;justify-self:center}
 #touch button.gr{background:rgba(255,198,41,.35);font-family:var(--f-display)}
 .gearbox{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:rgba(6,19,30,.75)}
 .gearbox button{border:0;border-radius:0;padding:.35em .8em;background:transparent;font-family:var(--f-display);font-size:1rem;color:var(--muted)}
@@ -191,7 +193,21 @@ body.touch .hud-speed{bottom:100px}
 .nitro i{display:block;width:min(30vw,200px);height:10px;border-radius:5px;background:#0a1d2b;overflow:hidden}
 .nitro b{display:block;height:100%;width:50%;background:linear-gradient(90deg,#3fc0e0,#9d6bff);transition:width .1s}
 #combo{position:absolute;top:42%;left:50%;transform:translateX(-50%);font-family:var(--f-display);font-size:clamp(1.2rem,3.6vw,2rem);color:#ffb547;text-shadow:0 2px 0 rgba(0,0,0,.5);white-space:nowrap}
-body.touch .nitro{bottom:auto;top:100px}
+body.touch .nitro{bottom:auto;top:auto;right:auto;left:max(14px,env(safe-area-inset-left,0px));bottom:calc(100px + 64px)}
+body.touch .hud-speed{bottom:100px}
+@media (max-width:560px){
+ .route{display:none}
+ .hbox{flex:1;min-width:0;padding:4px 10px}
+ .hbox b{font-size:1.15rem}
+ .hud-btns{top:82px;flex-wrap:wrap;right:max(12px,env(safe-area-inset-right,0px))}
+ .hud-btns button{padding:.3em .6em;font-size:.8rem}
+ #touch button{width:64px;height:64px;font-size:1.4rem}
+ #touch .grp.mid button{width:52px;height:52px;font-size:1rem}
+ #touch button span{font-size:.7rem}
+ body.touch .hud-speed{bottom:160px}
+ body.touch .nitro{bottom:226px}
+}
+@media (max-height:460px){#touch{grid-template-areas:'steer mid pedals'}#touch .grp.mid{align-self:end}body.touch .hud-speed{bottom:96px}body.touch .nitro{bottom:auto;top:96px;left:auto;right:max(14px,env(safe-area-inset-right,0px))}}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 </style>
 
@@ -1353,6 +1369,8 @@ function startLevel(li){
  Object.assign(G,{gear:'D',nitro:.5,drift:false,driftAng:0,driftScore:0,air:false,airT:0,spin:0,rev:false,boost:false,parts:[],pos:0,x:0,speed:0,steer:0,time:LV.time,money:0,crashes:0,coins:0,sky:0,shake:0,crashCd:0,attract:false,brake:false});
  $('#hTarget').textContent=money(targetMoney);$('#hFrom').textContent=LV.from;$('#hTo').textContent=LV.to;$('#hLvl').textContent='المرحلة '+ar(li+1);
  show(null);$('#hud').hidden=false;$('#touch').hidden=!isTouch;
+ if(isTouch){try{const de=document.documentElement;if(!document.fullscreenElement&&de.requestFullscreen)de.requestFullscreen({navigationUI:'hide'}).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}
+  if(matchMedia('(orientation:portrait)').matches)setTimeout(()=>toast('لف الموبايل بالعرض 📱↻'),900)}
  updGearUI();state='count';G.count=3.2;$('#count').textContent='';$('#combo').textContent='';
 }
 function crash(kind){

@@ -1,0 +1,20 @@
+{
+  "name": "ALEX NITRO · نيترو إسكندرية",
+  "short_name": "Alex Nitro",
+  "description": "لعبة سباق في شوارع إسكندرية والساحل: دريفت ونيترو ونطّات و٣٢ عربية.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#06131e",
+  "theme_color": "#06131e",
+  "categories": ["games"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

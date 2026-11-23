@@ -732,6 +732,19 @@ function romanSprite(){return mk(820,380,(g,w,h)=>{for(let k=0;k<9;k++){g.fillSt
 function mallSprite(en,lbl,col){return mk(960,440,(g,w,h)=>{g.fillStyle=col;g.fillRect(0,70,w,h-110);const gr=g.createLinearGradient(0,150,0,h);gr.addColorStop(0,'#8fc3dd');gr.addColorStop(1,'#2d5a77');g.fillStyle=gr;g.fillRect(40,150,w-80,h-200);
  g.strokeStyle='rgba(255,255,255,.4)';g.lineWidth=3;for(let x=40;x<w-40;x+=48){g.beginPath();g.moveTo(x,150);g.lineTo(x,h-50);g.stroke()}g.fillStyle='#ffe2a8';g.fillRect(w/2-90,h-130,180,80);
  g.fillStyle='#14202b';g.fillRect(w*.15,80,w*.7,62);fitText(g,en,w/2,111,44,'#ffd75a',w*.66);label(g,w,h,lbl)})}
+function victoriaSprite(){return mk(980,560,(g,w,h)=>{
+ g.fillStyle='#4f7a3a';g.fillRect(0,h-70,w,40);
+ const brick='#a8452f',dk=shade(brick,-.25),stone='#efe6d2';
+ g.fillStyle=brick;g.fillRect(40,200,w-80,h-270);g.fillStyle=dk;for(let y=206;y<h-70;y+=12)for(let x=40+((y/12|0)%2)*10;x<w-40;x+=22)g.fillRect(x,y,1.5,1.5);
+ g.fillStyle=stone;g.fillRect(30,190,w-60,16);g.fillRect(40,h-90,w-80,20);
+ for(let r=0;r<2;r++)for(let c=0;c<10;c++){const x=70+c*((w-140)/10)+((w-140)/10)/2-18,y=230+r*95;g.fillStyle=stone;g.beginPath();g.arc(x+18,y+16,22,Math.PI,0);g.lineTo(x+40,y+66);g.lineTo(x-4,y+66);g.fill();g.fillStyle='#2b3440';g.beginPath();g.arc(x+18,y+16,16,Math.PI,0);g.lineTo(x+34,y+60);g.lineTo(x+2,y+60);g.fill()}
+ const tx=w/2-70;g.fillStyle=brick;g.fillRect(tx,40,140,h-110);g.fillStyle=stone;g.fillRect(tx-8,34,156,14);g.fillRect(tx-8,150,156,10);
+ g.fillStyle=dk;g.beginPath();g.moveTo(tx-10,36);g.lineTo(w/2,-4);g.lineTo(tx+150,36);g.fill();
+ g.fillStyle=stone;g.beginPath();g.arc(w/2,100,38,0,7);g.fill();g.strokeStyle='#222';g.lineWidth=4;g.stroke();g.beginPath();g.moveTo(w/2,100);g.lineTo(w/2,72);g.moveTo(w/2,100);g.lineTo(w/2+20,108);g.stroke();
+ g.fillStyle='#2b3440';g.beginPath();g.arc(w/2,h-130,34,Math.PI,0);g.lineTo(w/2+34,h-70);g.lineTo(w/2-34,h-70);g.fill();
+ g.fillStyle='#14202b';g.fillRect(w/2-200,170,400,34);fitText(g,'VICTORIA COLLEGE',w/2,188,26,'#e8d7a4',380);
+ g.strokeStyle='#222';g.lineWidth=3;for(let x=10;x<w;x+=14){g.beginPath();g.moveTo(x,h-30);g.lineTo(x,h-62);g.stroke()}g.beginPath();g.moveTo(0,h-58);g.lineTo(w,h-58);g.stroke();
+ label(g,w,h,'كلية فيكتوريا')})}
 function stadiumSprite(){return mk(1040,380,(g,w,h)=>{g.fillStyle='#c9ccd0';g.beginPath();g.ellipse(w/2,h-40,w*.46,150,0,Math.PI,0);g.lineTo(w*.96,h-40);g.lineTo(w*.04,h-40);g.fill();
  for(let k=0;k<6;k++){g.strokeStyle=k%2?'#1f5fa8':'#e8eaec';g.lineWidth=10;g.beginPath();g.ellipse(w/2,h-40,w*.44-k*14,140-k*10,0,Math.PI*1.05,Math.PI*1.95);g.stroke()}
  for(const x of[w*.1,w*.9]){g.fillStyle='#8a9096';g.fillRect(x-5,20,10,h-60);g.fillStyle='#f4f4f0';rr(g,x-36,10,72,30,4);g.fill()}label(g,w,h,'استاد برج العرب')})}
@@ -841,7 +854,7 @@ const THEMES={
 };
 {const GR={day:['#ffe9c0',.10],noon:['#fff6e0',.06],golden:['#ff9a40',.16],sunset:['#ff6a50',.16],dusk:['#6040a0',.16],night:['#2a48b0',.16],dawn:['#ffb0a0',.12],coast:['#a0f0ff',.08],desert:['#ffb060',.14]};for(const k in GR)THEMES[k].grade=GR[k]}
 const SEG=200,RUMBLE=3,ROADW=2000,LANES=3,FOV=100,CAMD=1/Math.tan((FOV/2)*Math.PI/180),DRAW=240,PLAYERZ=1400,CHASE_H=1250,COCKPIT_Z=1400-1000*CAMD,PW=.34,CENTRI=.2;
-const MARKDEF={tram:{off:2.9,w:3},biblio:{off:4.1,w:4},montaza:{off:4.4,w:3.8},qaitbay:{off:-4.6,w:4.6},soldier:{off:3.3,w:2.8},zaghloul:{off:2.1,w:.8},cecil:{off:2.65,w:2.2},windsor:{off:2.65,w:2.2},sidigaber:{off:3.3,w:3.2},sporting:{off:2.8,w:2.6},sanstefano:{off:3.1,w:2.4},helnan:{off:3,w:2.6},beach:{off:-2.7,w:2.6},mosque:{off:3.5,w:3.2},rastin:{off:2.65,w:2.2},bitash:{off:-2.7,w:2.6},marina:{off:2.8,w:2.6},alamein:{off:3.1,w:2.4},agiba:{off:-2.7,w:2.6},pompey:{off:2.5,w:1.1},roman:{off:3.5,w:3.4},greenplaza:{off:3.1,w:2.4},citycentre:{off:3.5,w:3.6},stadium:{off:3.8,w:4.2},rashid:{off:3.7,w:3.8},baltim:{off:-2.7,w:2.6}};
+const MARKDEF={tram:{off:2.9,w:3},biblio:{off:4.1,w:4},montaza:{off:4.4,w:3.8},qaitbay:{off:-4.6,w:4.6},soldier:{off:3.3,w:2.8},zaghloul:{off:2.1,w:.8},cecil:{off:2.65,w:2.2},windsor:{off:2.65,w:2.2},sidigaber:{off:3.3,w:3.2},sporting:{off:2.8,w:2.6},sanstefano:{off:3.1,w:2.4},helnan:{off:3,w:2.6},beach:{off:-2.7,w:2.6},mosque:{off:3.5,w:3.2},rastin:{off:2.65,w:2.2},bitash:{off:-2.7,w:2.6},marina:{off:2.8,w:2.6},alamein:{off:3.1,w:2.4},agiba:{off:-2.7,w:2.6},pompey:{off:2.5,w:1.1},roman:{off:3.5,w:3.4},greenplaza:{off:3.1,w:2.4},citycentre:{off:3.5,w:3.6},stadium:{off:3.8,w:4.2},rashid:{off:3.7,w:3.8},baltim:{off:-2.7,w:2.6},victoria:{off:3.4,w:3.4}};
 const LEVEL_DEF=[
  {from:'المنشية',to:'محطة الرمل',theme:'day',marks:['soldier@.22','zaghloul@.5','cecil@.78'],spots:['mohamedahmed','delices','trianon']},
  {from:'محطة الرمل',to:'الشاطبي',theme:'noon',marks:['tram@.2','windsor@.5'],spots:['brazilian','mcd','azza']},
@@ -854,6 +867,7 @@ const LEVEL_DEF=[
  {from:'ستانلي',to:'جليم',theme:'day',marks:[],spots:['mcd','fishmarket','azza','cilantro']},
  {from:'جليم',to:'سان ستيفانو',theme:'sunset',marks:['sanstefano@.85'],spots:['gad','starbucks','kfc']},
  {from:'سان ستيفانو',to:'سيدي بشر',theme:'dusk',marks:[],spots:['mcd','gad','balbaa','costa']},
+ {from:'سيدي بشر',to:'فيكتوريا',theme:'golden',inland:true,marks:['tram@.25','victoria@.72','tram@.9'],spots:['momen','azza','kfc']},
  {from:'سيدي بشر',to:'ميامي',theme:'night',marks:[],spots:['azza','kfc','mohamedahmed','mcd']},
  {from:'ميامي',to:'العصافرة',theme:'night',marks:[],spots:['gad','cilantro','fishmarket']},
  {from:'العصافرة',to:'المندرة',theme:'dawn',marks:[],spots:['mcd','starbucks','gad','azza']},
@@ -890,6 +904,7 @@ const LEVELS=LEVEL_DEF.map((d,i)=>{const len=1400+i*160,bumps=i<2?0:Math.min(14,
 const SAVE_KEY='corniche-racer-v1';
 let S={money:0,owned:['renault'],car:'renault',unlocked:1,best:{},sound:true};
 try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(d&&typeof d==='object')S=Object.assign(S,d)}catch(e){}
+if(S.ver===3&&!S.lv2){const nb={};for(const k in S.best){const i=+k;nb[i>=11?i+1:i]=S.best[k]}S.best=nb;if(S.unlocked>11)S.unlocked++;S.lv2=true;save()}S.lv2=true;
 if(S.ver===2){S.money=Math.round((S.money||0)*100);S.best={}}else if(S.ver!==3){S.best={};S.unlocked=1}S.ver=3;if(!S.owned.includes('renault'))S.owned.unshift('renault');S.owned=S.owned.filter(id=>CARS.some(c=>c.id===id));if(!S.owned.length)S.owned=['renault'];if(!S.owned.includes(S.car))S.car=S.owned[0];
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 
@@ -976,7 +991,7 @@ function makeSprites(){
  SP.soldier=soldierSprite();SP.zaghloul=zaghloulSprite();SP.cecil=hotelSprite('CECIL HOTEL','فندق سيسيل','#efe3c8',1);SP.windsor=hotelSprite('WINDSOR PALACE','فندق وندسور','#dccaa6',2);
  SP.sidigaber=stationSprite();SP.sporting=sportingSprite();SP.sanstefano=towerSprite();SP.helnan=hotelSprite('HELNAN PALESTINE','فندق هلنان فلسطين','#f4f4f0',3);SP.beach=beachSprite();SP.mosque=mosqueSprite();
  SP.bumpSign=bumpSignSprite();SP.zebraSign=zebraSignSprite();SP.ramp=rampSprite();
- SP.pompey=pompeySprite();SP.roman=romanSprite();SP.greenplaza=towerSprite('GREEN PLAZA','Green Plaza Mall','جرين بلازا · سموحة');SP.citycentre=mallSprite('City Centre','سيتي سنتر إسكندرية','#d9d4c8');SP.stadium=stadiumSprite();SP.rashid=qaitbaySprite();SP.baltim=beachSprite('شاطئ بلطيم');
+ SP.pompey=pompeySprite();SP.roman=romanSprite();SP.greenplaza=towerSprite('GREEN PLAZA','Green Plaza Mall','جرين بلازا · سموحة');SP.citycentre=mallSprite('City Centre','سيتي سنتر إسكندرية','#d9d4c8');SP.stadium=stadiumSprite();SP.victoria=victoriaSprite();SP.rashid=qaitbaySprite();SP.baltim=beachSprite('شاطئ بلطيم');
  SP.rastin=hotelSprite('RAS EL TIN PALACE','قصر رأس التين','#e9e2d0',2);SP.bitash=beachSprite('شاطئ البيطاش · العجمي');SP.marina=sportingSprite('مارينا العلمين','بوابة مارينا · الساحل الشمالي');
  SP.alamein=towerSprite('NEW ALAMEIN','North Coast Towers','أبراج العلمين الجديدة');SP.agiba=beachSprite('شاطئ عجيبة · مرسى مطروح');
  SP.coin=coinSprite();SP.cash=cashSprite();SP.clouds=[1,2,3,4].map(cloudSprite);

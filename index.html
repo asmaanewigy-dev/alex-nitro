@@ -897,7 +897,7 @@ const LEVEL_DEF=[
  {from:'رشيد',to:'بلطيم',theme:'sunset',marks:['baltim@.6'],spots:['seagull','hosny','azza']},
 ];
 const LEVELS=LEVEL_DEF.map((d,i)=>{const len=1400+i*160,bumps=i<2?0:Math.min(14,2+Math.floor(i*.45));const car=CARS[Math.min(28,Math.round(i*.75))];const coin=5000*Math.round((1+i*.3)*2)/2;
- return Object.assign({},d,{ramps:i<1?0:Math.min(9,1+Math.floor(i/3)),len,traffic:Math.min(50,10+Math.floor(i*1.6)),need:Math.min(.75,.40+i*.015),bumps,coin,reward:coin*(40+i*4),penalty:coin*5,
+ return Object.assign({},d,{ramps:i<1?0:Math.min(9,1+Math.floor(i/3)),len,traffic:Math.min(50,10+Math.floor(i*1.6)),need:Math.min(.75,.40+i*.015),bumps,coin,reward:coin*(40+i*4),penalty:Math.round(coin*2.5),
   time:Math.round((len*SEG/(car.max*.70)+bumps*1.5)*(1.08+Math.max(0,.25-i*.02))),marks:d.marks.map(m=>{const[t,at]=m.split('@');return Object.assign({t,at:+at},MARKDEF[t])})})});
 
 /* ---------- save ---------- */
@@ -1424,7 +1424,7 @@ function startLevel(li){
  updGearUI();state='count';G.count=3.2;$('#count').textContent='';$('#combo').textContent='';
 }
 function crash(kind){
- if(G.crashCd>0)return;G.crashCd=.8;G.crashes++;const pen=kind==='car'?LV.penalty:LV.coin*2;G.money=Math.max(0,G.money-pen);G.shake=1;noise(.35,.3);
+ if(G.crashCd>0)return;G.crashCd=.8;G.crashes++;const pen=kind==='car'?LV.penalty:LV.coin;G.money=Math.max(0,G.money-pen);G.shake=1;noise(.35,.3);
  toast(kind==='car'?`خبطة! −${money(pen)} ج`:`حاسب! −${money(pen)} ج`,'bad');
 }
 function update(dt){
